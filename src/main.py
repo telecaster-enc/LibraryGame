@@ -152,9 +152,6 @@ while running:
 
     current_time_ms = pygame.time.get_ticks()
 
-    if len(object_sprites) == 0:
-        text_surface = text_font.render("You've collected all the books!, Put it on the shelf!", True, (255, 255, 255))
-
     collision_book = pygame.sprite.spritecollide(Kokomi, object_sprites, False)
     if collision_book:
         for book in collision_book:
