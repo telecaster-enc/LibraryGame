@@ -7,12 +7,13 @@ pygame.display.set_icon(pygame.image.load("assets/images/icon.jpg"))
 clock = pygame.time.Clock()
 
 tot_buku = 9
+books_inhand = 0
+total_books_collected = 0
 running = True
 warna = "black"
 screen.fill(warna)
 text_font = pygame.font.SysFont(None, 36)
-text_surface = text_font.render("Collect the books!", True, (255, 255, 255))
-text_total = text_font.render(f"Total books collected: 0/{tot_buku}", True, (255, 255, 255))
+text_small = pygame.font.SysFont(None, 24)
 
 class rak_sprite(pygame.sprite.Sprite):
     def __init__(self):
@@ -104,17 +105,20 @@ for i in range(tot_buku//3):
     object_sprites.add(buku_banyak)
 rak_sprites = pygame.sprite.GroupSingle(rak)
 
+text_surface = text_font.render("Collect the books!", True, (255, 255, 255))
+text_total = text_font.render(f"Total books collected: 0/{tot_buku}", True, (255, 255, 255))
+text_inventory = text_font.render(f"Inventory: {books_inhand}/3", True, ("white"))
+text_pickup = text_small.render("Press [E] to pick up the book", True, ("white"))
+
 def draw_everything():
     screen.fill(warna)
     rak_sprites.draw(screen)
     object_sprites.draw(screen)
     player_sprites.draw(screen)
-    book_in_hand.draw(screen)
-    screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 10))
-    screen.blit(text_total, (10, 620))
+    screen.blit(text_surface, (10, 10))
+    screen.blit(text_inventory, (10, 720 - text_total.get_height()-10 - text_inventory.get_height() - 10))
+    screen.blit(text_total, (10, 720 - text_total.get_height()-10))
 
-books_inhand = 0
-total_books_collected = 0
 text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
 
 while running: 
@@ -122,43 +126,44 @@ while running:
     object_sprites.update()
     draw_everything()
 
+    current_time_ms = pygame.time.get_ticks()
+
     if len(object_sprites) == 0:
         text_surface = text_font.render("You've collected all the books!, Put it on the shelf!", True, (255, 255, 255))
 
     collision_book = pygame.sprite.spritecollide(Kokomi, object_sprites, False)
     if collision_book:
-        if books_inhand < 3:
-            text_surface = text_font.render("Press [E] to collect the book", True, (255, 255, 255))
-            screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 50))
-            if pygame.key.get_pressed()[pygame.K_e]:
-                for book in collision_book:
+        for book in collision_book:
+            if len(book_in_hand) < 3:
+                text_pickup = text_small.render("Press [E] to pick up the book", True, ("white"))
+                screen.blit(text_pickup, (book.rect.x + 50 - text_pickup.get_width()/2, book.rect.y - 15 - text_pickup.get_height()))
+                if pygame.key.get_pressed()[pygame.K_e]:
                     object_sprites.remove(book)
-                total_books_collected += 1
-                books_inhand += 1
-                text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
-                bookinhand = buku_sprite_yellow() or buku_sprite_green() or buku_sprite_white()
-                book_in_hand.add(bookinhand)
-                
-        else:
-            text_surface = text_font.render("Your inventory is full! Go to the shelf to place the books!", True, (255, 255, 255))
-            screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 50))
+                    book_in_hand.add(book)
+                    text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("white"))
+            else:
+                text_pickup = text_small.render("Your inventory is full", True, ("white"))
+                screen.blit(text_pickup, (book.rect.x + 50 - text_pickup.get_width()/2, book.rect.y - 15 - text_pickup.get_height()))
 
     collision_rak = pygame.sprite.spritecollide(Kokomi, rak_sprites, False)
     if collision_rak:
-        if books_inhand > 0:
+        if len(book_in_hand) > 0:
             text_rak = text_font.render("Press [SPACE] to place the book on the shelf", True, (255, 255, 255))
-            screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 100))
+            for rak in collision_rak:    
+                screen.blit(text_rak, (1280-text_rak.get_width()-10, 720-400-text_rak.get_height()-10))
             if pygame.key.get_pressed()[pygame.K_SPACE]:
-                for book in book_in_hand:
-                    book_in_hand.remove(book)
-                books_inhand = 0
+                for i in range(len(book_in_hand)):
+                    for book in book_in_hand:
+                        total_books_collected+=1
+                        book_in_hand.remove(book)
+                text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
+                text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("white"))      
         else:
             if total_books_collected == tot_buku:
-                text_rak = text_font.render("Congratulations! You've placed all the books on the shelf!", True, (255, 255, 255))
-                screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 100))
+                text_surface = text_font.render("Congratulations! You've placed all the books on the shelf!", True, (255, 255, 255))
             else:
                 text_rak = text_font.render("There are no books to place on the shelf!", True, (255, 255, 255))
-                screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 100))
+                screen.blit(text_rak, (1280-text_rak.get_width() - 10, 720-400-text_rak.get_height()-10))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
