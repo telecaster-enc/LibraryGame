@@ -6,12 +6,13 @@ pygame.display.set_caption("Library Game")
 pygame.display.set_icon(pygame.image.load("assets/icon.jpg"))
 clock = pygame.time.Clock()
 
+tot_buku = 10
 running = True
 warna = "black"
 screen.fill(warna)
 text_font = pygame.font.SysFont(None, 36)
 text_surface = text_font.render("Collect the books!", True, (255, 255, 255))
-text_total = text_font.render("Total books collected: 0/4", True, (255, 255, 255))
+text_total = text_font.render(f"Total books collected: 0/{tot_buku}", True, (255, 255, 255))
 
 class rak_sprite(pygame.sprite.Sprite):
     def __init__(self):
@@ -23,45 +24,6 @@ class rak_sprite(pygame.sprite.Sprite):
         self.rect.y = 720-400
 
 class buku_sprite(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("assets/buku.jpg")
-        self.image = pygame.transform.scale(self.image, (100, 100))
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
-
-    def randomize_position(self):
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
-
-class buku_sprite2(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("assets/buku.jpg")
-        self.image = pygame.transform.scale(self.image, (100, 100))
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
-
-    def randomize_position(self):
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
-
-class buku_sprite3(pygame.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image = pygame.image.load("assets/buku.jpg")
-        self.image = pygame.transform.scale(self.image, (100, 100))
-        self.rect = self.image.get_rect()
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
-
-    def randomize_position(self):
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
-
-class buku_sprite4(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("assets/buku.jpg")
@@ -98,17 +60,12 @@ class kokomi(pygame.sprite.Sprite):
             #self.rect = self.image_flipped.get_rect()
 
 Kokomi = kokomi()
-buku1 = buku_sprite()
-buku2 = buku_sprite2()
-buku3 = buku_sprite3()
-buku4 = buku_sprite4()
 rak = rak_sprite()  
 player_sprites = pygame.sprite.GroupSingle(Kokomi)
 object_sprites = pygame.sprite.Group()
-object_sprites.add(buku1)
-object_sprites.add(buku2)
-object_sprites.add(buku3)
-object_sprites.add(buku4)
+for i in range(tot_buku):
+    buku_banyak = buku_sprite()
+    object_sprites.add(buku_banyak)
 rak_sprites = pygame.sprite.GroupSingle(rak)
 
 def draw_everything():
@@ -124,9 +81,8 @@ def show_text():
     screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 50))
     pygame.display.flip()
 
-# Initialize the total books collected
 total_books_collected = 0
-text_total = text_font.render(f"Total books collected: {total_books_collected}/4", True, (255, 255, 255))
+text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
 
 while running: 
     player_sprites.update()
@@ -140,7 +96,7 @@ while running:
     if collision_book:
         show_text()
         total_books_collected += 1
-        text_total = text_font.render(f"Total books collected: {total_books_collected}/4", True, (255, 255, 255))
+        text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
 
     collision_rak = pygame.sprite.spritecollide(Kokomi, rak_sprites, False)
     if collision_rak:
