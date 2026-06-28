@@ -9,7 +9,7 @@ clock = pygame.time.Clock()
 running = True
 warna = "black"
 screen.fill(warna)
-text_font = pygame.font.SysFont("arial", 36)
+text_font = pygame.font.SysFont(None, 36)
 text_surface = text_font.render("Collect the books!", True, (255, 255, 255))
 text_total = text_font.render("Total books collected: 0/4", True, (255, 255, 255))
 
@@ -21,8 +21,6 @@ class rak_sprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 1280-400
         self.rect.y = 720-400
-
-
 
 class buku_sprite(pygame.sprite.Sprite):
     def __init__(self):
