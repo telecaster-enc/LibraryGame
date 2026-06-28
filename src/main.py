@@ -1,4 +1,4 @@
-import random, pygame, time, schedule, sys
+import random, pygame, time, schedule, sys, math
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -7,10 +7,11 @@ pygame.display.set_icon(pygame.image.load("assets/images/icon.jpg"))
 clock = pygame.time.Clock()
 
 tot_buku = 9
+current_time = random.uniform(0, math.pi*2)
 books_inhand = 0
 total_books_collected = 0
 running = True
-warna = "black"
+warna = "grey"
 screen.fill(warna)
 text_font = pygame.font.SysFont(None, 36)
 text_small = pygame.font.SysFont(None, 24)
@@ -24,6 +25,11 @@ class rak_sprite(pygame.sprite.Sprite):
         self.rect.x = 1280-400
         self.rect.y = 720-400
 
+class shadow(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.draw.ellipse
+
 class buku_sprite_yellow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -32,10 +38,16 @@ class buku_sprite_yellow(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 1180)
         self.rect.y = random.randint(0, 620)
+        self.base_y= self.rect.y        
+        self.held=False 
 
-    def randomize_position(self):
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
+    def update(self):
+        if self.held:
+            for Kokomi in player_sprites:
+                self.rect.x=Kokomi.rect.x + (35*(len(book_in_hand)-1))
+                self.rect.y=Kokomi.rect.y-40
+        else:
+            self.rect.y=self.base_y+math.sin(current_time)*5
 
 class buku_sprite_green(pygame.sprite.Sprite):
     def __init__(self):
@@ -45,10 +57,16 @@ class buku_sprite_green(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 1180)
         self.rect.y = random.randint(0, 620)
+        self.base_y= self.rect.y
+        self.held=False 
 
-    def randomize_position(self):
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
+    def update(self):
+        if self.held:
+            for Kokomi in player_sprites:
+                self.rect.x=Kokomi.rect.x + (35*(len(book_in_hand)-1))
+                self.rect.y=Kokomi.rect.y-40
+        else:
+            self.rect.y=self.base_y+math.sin(current_time)*5
 
 class buku_sprite_white(pygame.sprite.Sprite):
     def __init__(self):
@@ -58,13 +76,16 @@ class buku_sprite_white(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 1180)
         self.rect.y = random.randint(0, 620)
+        self.base_y= self.rect.y
+        self.held=False 
 
-    def state(self, floor, held, shelf):
-        if held:
-            def update(self):
-                self.rect
-        self.rect.x = random.randint(0, 1180)
-        self.rect.y = random.randint(0, 620)
+    def update(self):
+        if self.held:
+            for Kokomi in player_sprites:
+                self.rect.x=Kokomi.rect.x + (35*(len(book_in_hand)-1))
+                self.rect.y=Kokomi.rect.y-40
+        else:
+            self.rect.y=self.base_y+math.sin(current_time)*5
 
 class kokomi(pygame.sprite.Sprite):
     def __init__(self):
@@ -115,6 +136,7 @@ def draw_everything():
     rak_sprites.draw(screen)
     object_sprites.draw(screen)
     player_sprites.draw(screen)
+    book_in_hand.draw(screen)
     screen.blit(text_surface, (10, 10))
     screen.blit(text_inventory, (10, 720 - text_total.get_height()-10 - text_inventory.get_height() - 10))
     screen.blit(text_total, (10, 720 - text_total.get_height()-10))
@@ -124,7 +146,9 @@ text_total = text_font.render(f"Total books collected: {total_books_collected}/{
 while running: 
     player_sprites.update()
     object_sprites.update()
+    book_in_hand.update()
     draw_everything()
+    current_time+=0.05
 
     current_time_ms = pygame.time.get_ticks()
 
@@ -140,6 +164,8 @@ while running:
                 if pygame.key.get_pressed()[pygame.K_e]:
                     object_sprites.remove(book)
                     book_in_hand.add(book)
+                    book.image = pygame.transform.scale(book.image,(30,30))
+                    book.held = True
                     text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("white"))
             else:
                 text_pickup = text_small.render("Your inventory is full", True, ("white"))
