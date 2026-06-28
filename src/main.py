@@ -3,10 +3,10 @@ import random, pygame, time, schedule, sys
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Library Game")
-pygame.display.set_icon(pygame.image.load("assets/icon.jpg"))
+pygame.display.set_icon(pygame.image.load("assets/images/icon.jpg"))
 clock = pygame.time.Clock()
 
-tot_buku = 10
+tot_buku = 9
 running = True
 warna = "black"
 screen.fill(warna)
@@ -17,16 +17,16 @@ text_total = text_font.render(f"Total books collected: 0/{tot_buku}", True, (255
 class rak_sprite(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("assets/shelf.jpg")
+        self.image = pygame.image.load("assets/images/shelf.jpg")
         self.image = pygame.transform.scale(self.image, (400, 400))
         self.rect = self.image.get_rect()
         self.rect.x = 1280-400
         self.rect.y = 720-400
 
-class buku_sprite(pygame.sprite.Sprite):
+class buku_sprite_yellow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("assets/buku.jpg")
+        self.image = pygame.image.load("assets/images/buku_kuning.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 1180)
@@ -36,17 +36,46 @@ class buku_sprite(pygame.sprite.Sprite):
         self.rect.x = random.randint(0, 1180)
         self.rect.y = random.randint(0, 620)
 
-class kokomi(pygame.sprite.Sprite):
+class buku_sprite_green(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("assets/icon.jpg")
+        self.image = pygame.image.load("assets/images/buku_hijau.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, 1180)
+        self.rect.y = random.randint(0, 620)
+
+    def randomize_position(self):
+        self.rect.x = random.randint(0, 1180)
+        self.rect.y = random.randint(0, 620)
+
+class buku_sprite_white(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("assets/images/buku_putih.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (100, 100))
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(0, 1180)
+        self.rect.y = random.randint(0, 620)
+
+    def state(self, floor, held, shelf):
+        if held:
+            def update(self):
+                self.rect
+        self.rect.x = random.randint(0, 1180)
+        self.rect.y = random.randint(0, 620)
+
+class kokomi(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__() 
+        self.image = pygame.image.load("assets/images/icon.jpg")
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.image = pygame.transform.flip(self.image, True, False)
         self.rect = self.image.get_rect()
         self.rect.x = 100
         self.rect.y = 100
 
-    def update(self):
+    def update(self): #Movement of the player
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             self.rect.y += 10
@@ -63,8 +92,15 @@ Kokomi = kokomi()
 rak = rak_sprite()  
 player_sprites = pygame.sprite.GroupSingle(Kokomi)
 object_sprites = pygame.sprite.Group()
-for i in range(tot_buku):
-    buku_banyak = buku_sprite()
+book_in_hand = pygame.sprite.Group()
+for i in range(tot_buku//3):
+    buku_banyak = buku_sprite_yellow()
+    object_sprites.add(buku_banyak)
+for i in range(tot_buku//3):
+    buku_banyak = buku_sprite_green()
+    object_sprites.add(buku_banyak)
+for i in range(tot_buku//3):
+    buku_banyak = buku_sprite_white()
     object_sprites.add(buku_banyak)
 rak_sprites = pygame.sprite.GroupSingle(rak)
 
@@ -73,14 +109,11 @@ def draw_everything():
     rak_sprites.draw(screen)
     object_sprites.draw(screen)
     player_sprites.draw(screen)
+    book_in_hand.draw(screen)
     screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 10))
     screen.blit(text_total, (10, 620))
 
-def show_text():
-    text_surface = text_font.render("You collected a book!", True, (255, 255, 255))
-    screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 50))
-    pygame.display.flip()
-
+books_inhand = 0
 total_books_collected = 0
 text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
 
@@ -92,26 +125,40 @@ while running:
     if len(object_sprites) == 0:
         text_surface = text_font.render("You've collected all the books!, Put it on the shelf!", True, (255, 255, 255))
 
-    collision_book = pygame.sprite.spritecollide(Kokomi, object_sprites, True)
+    collision_book = pygame.sprite.spritecollide(Kokomi, object_sprites, False)
     if collision_book:
-        show_text()
-        total_books_collected += 1
-        text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
+        if books_inhand < 3:
+            text_surface = text_font.render("Press [E] to collect the book", True, (255, 255, 255))
+            screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 50))
+            if pygame.key.get_pressed()[pygame.K_e]:
+                for book in collision_book:
+                    object_sprites.remove(book)
+                total_books_collected += 1
+                books_inhand += 1
+                text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
+                bookinhand = buku_sprite_yellow() or buku_sprite_green() or buku_sprite_white()
+                book_in_hand.add(bookinhand)
+                
+        else:
+            text_surface = text_font.render("Your inventory is full! Go to the shelf to place the books!", True, (255, 255, 255))
+            screen.blit(text_surface, (720/2 - text_surface.get_width()/2, 50))
 
     collision_rak = pygame.sprite.spritecollide(Kokomi, rak_sprites, False)
     if collision_rak:
-        if len(object_sprites) == 0:
+        if books_inhand > 0:
             text_rak = text_font.render("Press [SPACE] to place the book on the shelf", True, (255, 255, 255))
             screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 100))
             if pygame.key.get_pressed()[pygame.K_SPACE]:
-                text_rak = text_font.render("You placed the book on the shelf!, You Won!", True, (255, 255, 255))
-                screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 150))
-                pygame.display.flip()
-                time.sleep(2)
-                running = False
+                for book in book_in_hand:
+                    book_in_hand.remove(book)
+                books_inhand = 0
         else:
-            text_rak = text_font.render("You need to collect all the books first!", True, (255, 255, 255))
-            screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 100))
+            if total_books_collected == tot_buku:
+                text_rak = text_font.render("Congratulations! You've placed all the books on the shelf!", True, (255, 255, 255))
+                screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 100))
+            else:
+                text_rak = text_font.render("There are no books to place on the shelf!", True, (255, 255, 255))
+                screen.blit(text_rak, (720/2 - text_rak.get_width()/2, 100))
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
