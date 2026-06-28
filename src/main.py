@@ -10,6 +10,7 @@ tot_buku = 9
 current_time = random.uniform(0, math.pi*2)
 books_inhand = 0
 total_books_collected = 0
+num_slot = 0
 running = True
 warna = "grey"
 screen.fill(warna)
@@ -40,11 +41,12 @@ class buku_sprite_yellow(pygame.sprite.Sprite):
         self.rect.y = random.randint(0, 620)
         self.base_y= self.rect.y        
         self.held=False 
+        self.slot = 0
 
     def update(self):
         if self.held:
             for Kokomi in player_sprites:
-                self.rect.x=Kokomi.rect.x + (35*(len(book_in_hand)-1))
+                self.rect.x=Kokomi.rect.x + (35*(self.slot-1))
                 self.rect.y=Kokomi.rect.y-40
         else:
             self.rect.y=self.base_y+math.sin(current_time)*5
@@ -59,11 +61,12 @@ class buku_sprite_green(pygame.sprite.Sprite):
         self.rect.y = random.randint(0, 620)
         self.base_y= self.rect.y
         self.held=False 
+        self.slot = 0
 
     def update(self):
         if self.held:
             for Kokomi in player_sprites:
-                self.rect.x=Kokomi.rect.x + (35*(len(book_in_hand)-1))
+                self.rect.x=Kokomi.rect.x + (35*(self.slot-1))
                 self.rect.y=Kokomi.rect.y-40
         else:
             self.rect.y=self.base_y+math.sin(current_time)*5
@@ -78,11 +81,12 @@ class buku_sprite_white(pygame.sprite.Sprite):
         self.rect.y = random.randint(0, 620)
         self.base_y= self.rect.y
         self.held=False 
+        self.slot=0
 
     def update(self):
         if self.held:
             for Kokomi in player_sprites:
-                self.rect.x=Kokomi.rect.x + (35*(len(book_in_hand)-1))
+                self.rect.x=Kokomi.rect.x + (35*(self.slot-1))
                 self.rect.y=Kokomi.rect.y-40
         else:
             self.rect.y=self.base_y+math.sin(current_time)*5
@@ -162,6 +166,8 @@ while running:
                     object_sprites.remove(book)
                     book_in_hand.add(book)
                     book.image = pygame.transform.scale(book.image,(30,30))
+                    num_slot+= 1
+                    book.slot = num_slot
                     book.held = True
                     text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("white"))
             else:
@@ -178,6 +184,7 @@ while running:
                 for i in range(len(book_in_hand)):
                     for book in book_in_hand:
                         total_books_collected+=1
+                        num_slot=0
                         book_in_hand.remove(book)
                 text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
                 text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("white"))      
