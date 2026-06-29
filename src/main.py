@@ -30,6 +30,18 @@ class rak_sprite(pygame.sprite.Sprite):
         self.rect.x = 1280-400
         self.rect.y = 720-400
 
+class shadow(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("assets/images/shadow.png").convert_alpha()
+        self.center = (50,15)
+        self.rect = self.image.get_rect(center=(50, 15))
+        self.rect = (0,0)
+
+    def update(self):
+        self.image = pygame.transform.scale(self.image, (80 - math.sin(current_time)*5, 30 - math.sin(current_time)*5))
+    
+
 class buku_sprite_yellow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -38,9 +50,14 @@ class buku_sprite_yellow(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 1180)
         self.rect.y = random.randint(0, 620)
+
+        self.shadow = pygame.draw.ellipse(screen,(0, 0, 0, 255), (self.rect.x, self.rect.y-150, 100,30))
+
         self.base_y= self.rect.y        
         self.held=False 
         self.slot = 0
+
+        
 
     def update(self):
         if self.held:
@@ -101,10 +118,12 @@ class kokomi(pygame.sprite.Sprite):
         self.rect.x = 100
         self.rect.y = 300
 
+
+
     def update(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            if can_walk(self.rect.x, self.rect.y+110):
+            if can_walk(self.rect.x, self.rect.y+100):
                 self.rect.y += 10
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             if can_walk(self.rect.x, self.rect.y-10):    
@@ -128,16 +147,26 @@ Kokomi = kokomi()
 rak = rak_sprite()  
 player_sprites = pygame.sprite.GroupSingle(Kokomi)
 object_sprites = pygame.sprite.Group()
+shadow_sprites = pygame.sprite.Group()
 book_in_hand = pygame.sprite.Group()
 for i in range(tot_buku//3):
     buku_banyak = buku_sprite_yellow()
     object_sprites.add(buku_banyak)
+    shade = shadow() 
+    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    shadow_sprites.add(shade)
 for i in range(tot_buku//3):
     buku_banyak = buku_sprite_green()
     object_sprites.add(buku_banyak)
+    shade = shadow() 
+    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    shadow_sprites.add(shade)
 for i in range(tot_buku//3):
     buku_banyak = buku_sprite_white()
     object_sprites.add(buku_banyak)
+    shade = shadow() 
+    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    shadow_sprites.add(shade)
 rak_sprites = pygame.sprite.GroupSingle(rak)
 
 text_surface = text_font.render("Collect the books!", True, ("white"))
@@ -148,12 +177,14 @@ text_total = text_font.render(f"Total books collected: {total_books_collected}/{
 
 def draw_everything():
     screen.fill(warna)
-    screen.blit(floor_1_coll, (0,0)) 
+    screen.blit(floor_1, (0,0)) 
     rak_sprites.draw(screen)
+    shadow_sprites.draw(screen)
     object_sprites.draw(screen)
     player_sprites.draw(screen)
     book_in_hand.draw(screen)
     player_sprites.update()
+    shadow_sprites.update()
     object_sprites.update()
     book_in_hand.update()
     screen.blit(text_surface, (10, 10))
@@ -165,9 +196,9 @@ def can_walk(current_x, current_y):
         map_pixel = floor_1_coll.get_at((current_x,current_y))
     except IndexError:
         return False
-    if map_pixel == (0, 0, 0):
-        return False
-    return True
+    if map_pixel == (255, 255, 255):
+        return True
+    return False
 
 while running: 
     draw_everything()
