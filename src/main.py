@@ -9,6 +9,10 @@ clock = pygame.time.Clock()
 running = True
 warna = "grey"
 screen.fill(warna)
+floor_1 = pygame.image.load("assets/images/floor_1.jpg")
+floor_1 = pygame.transform.scale(floor_1, (1280,720))
+floor_1_coll = pygame.image.load("assets/images/floor_1_alpha.jpg")
+floor_1_coll = pygame.transform.scale(floor_1_coll, (1280,720))
 text_font = pygame.font.SysFont(None, 36)
 text_small = pygame.font.SysFont(None, 24)
 tot_buku = 9
@@ -95,22 +99,26 @@ class kokomi(pygame.sprite.Sprite):
         self.turn_left = False
         self.rect = self.image.get_rect()
         self.rect.x = 100
-        self.rect.y = 100
+        self.rect.y = 300
 
     def update(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            self.rect.y += 10
+            if can_walk(self.rect.x, self.rect.y+110):
+                self.rect.y += 10
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            self.rect.y -= 10
+            if can_walk(self.rect.x, self.rect.y-10):    
+                self.rect.y -= 10
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            self.rect.x += 10
+            if can_walk(self.rect.x+110, self.rect.y):
+                self.rect.x += 10
             if self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
                 self.turn_left = False
             #self.rect = self.image.get_rect()
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            self.rect.x -= 10
+            if can_walk(self.rect.x-10, self.rect.y):
+                self.rect.x -= 10
             if not self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
                 self.turn_left = True
@@ -140,6 +148,7 @@ text_total = text_font.render(f"Total books collected: {total_books_collected}/{
 
 def draw_everything():
     screen.fill(warna)
+    screen.blit(floor_1_coll, (0,0)) 
     rak_sprites.draw(screen)
     object_sprites.draw(screen)
     player_sprites.draw(screen)
@@ -150,6 +159,15 @@ def draw_everything():
     screen.blit(text_surface, (10, 10))
     screen.blit(text_inventory, (10, 720 - text_total.get_height()-10 - text_inventory.get_height() - 10))
     screen.blit(text_total, (10, 720 - text_total.get_height()-10))
+
+def can_walk(current_x, current_y):
+    try:   
+        map_pixel = floor_1_coll.get_at((current_x,current_y))
+    except IndexError:
+        return False
+    if map_pixel == (0, 0, 0):
+        return False
+    return True
 
 while running: 
     draw_everything()
