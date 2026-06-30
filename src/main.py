@@ -9,7 +9,7 @@ clock = pygame.time.Clock()
 running = True
 warna = "grey"
 screen.fill(warna)
-floor_1 = pygame.image.load("assets/images/floor_1.jpg")
+floor_1 = pygame.image.load("assets/images/floor_1_grey.jpg")
 floor_1 = pygame.transform.scale(floor_1, (1280,720))
 floor_1_coll = pygame.image.load("assets/images/floor_1_alpha.jpg")
 floor_1_coll = pygame.transform.scale(floor_1_coll, (1280,720))
@@ -34,8 +34,6 @@ class shadow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("assets/images/shadow.png").convert_alpha()
-        self.center = (50,15)
-        self.rect = self.image.get_rect(center=(50, 15))
         self.rect = (0,0)
 
     def update(self):
@@ -117,26 +115,26 @@ class kokomi(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 100
         self.rect.y = 300
-
+        self.hitbox = pygame.draw.rect(screen, (0,0,0), (100,300, 100,100))
 
 
     def update(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            if can_walk(self.rect.x, self.rect.y+100):
+            if can_walk(self.rect.x, self.rect.y+10, "down"):
                 self.rect.y += 10
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            if can_walk(self.rect.x, self.rect.y-10):    
+            if can_walk(self.rect.x, self.rect.y-10, "up"):    
                 self.rect.y -= 10
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            if can_walk(self.rect.x+110, self.rect.y):
+            if can_walk(self.rect.x+10, self.rect.y, "right"):
                 self.rect.x += 10
             if self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
                 self.turn_left = False
             #self.rect = self.image.get_rect()
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            if can_walk(self.rect.x-10, self.rect.y):
+            if can_walk(self.rect.x-10, self.rect.y, "left"):
                 self.rect.x -= 10
             if not self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
@@ -153,50 +151,61 @@ for i in range(tot_buku//3):
     buku_banyak = buku_sprite_yellow()
     object_sprites.add(buku_banyak)
     shade = shadow() 
-    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    shadow_sprites.add(shade)
+    #shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    #shadow_sprites.add(shade)
 for i in range(tot_buku//3):
     buku_banyak = buku_sprite_green()
     object_sprites.add(buku_banyak)
     shade = shadow() 
-    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    shadow_sprites.add(shade)
+    #shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    #shadow_sprites.add(shade)
 for i in range(tot_buku//3):
     buku_banyak = buku_sprite_white()
     object_sprites.add(buku_banyak)
     shade = shadow() 
-    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    shadow_sprites.add(shade)
+    #shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    #shadow_sprites.add(shade)
 rak_sprites = pygame.sprite.GroupSingle(rak)
 
-text_surface = text_font.render("Collect the books!", True, ("white"))
-text_total = text_font.render(f"Total books collected: 0/{tot_buku}", True, ("white"))
-text_inventory = text_font.render(f"Inventory: {books_inhand}/3", True, ("white"))
-text_pickup = text_small.render("Press [E] to pick up the book", True, ("white"))
-text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, ("white"))
+text_surface = text_font.render("Collect the books!", True, ("black"))
+text_total = text_font.render(f"Total books collected: 0/{tot_buku}", True, ("black"))
+text_inventory = text_font.render(f"Inventory: {books_inhand}/3", True, ("black"))
+text_pickup = text_small.render("Press [E] to pick up the book", True, ("black"))
+text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, ("black"))
 
 def draw_everything():
     screen.fill(warna)
     screen.blit(floor_1, (0,0)) 
     rak_sprites.draw(screen)
-    shadow_sprites.draw(screen)
+    #shadow_sprites.draw(screen)
     object_sprites.draw(screen)
     player_sprites.draw(screen)
     book_in_hand.draw(screen)
     player_sprites.update()
-    shadow_sprites.update()
+    #shadow_sprites.update()
     object_sprites.update()
     book_in_hand.update()
     screen.blit(text_surface, (10, 10))
     screen.blit(text_inventory, (10, 720 - text_total.get_height()-10 - text_inventory.get_height() - 10))
     screen.blit(text_total, (10, 720 - text_total.get_height()-10))
 
-def can_walk(current_x, current_y):
-    try:   
-        map_pixel = floor_1_coll.get_at((current_x,current_y))
+def can_walk(current_x, current_y, dir):
+    try:
+        if dir == "right":
+            map_pixel = floor_1_coll.get_at((current_x+100,current_y))
+            map_pixel2 = floor_1_coll.get_at((current_x+100,current_y+100))
+        elif dir == "left":
+            map_pixel = floor_1_coll.get_at((current_x,current_y))
+            map_pixel2 = floor_1_coll.get_at((current_x,current_y+100))
+        elif dir == "up":
+            map_pixel = floor_1_coll.get_at((current_x,current_y))
+            map_pixel2 = floor_1_coll.get_at((current_x+100,current_y))
+        elif dir == "down":
+            map_pixel = floor_1_coll.get_at((current_x,current_y+100))
+            map_pixel2 = floor_1_coll.get_at((current_x+100,current_y+100))
     except IndexError:
         return False
-    if map_pixel == (255, 255, 255):
+    if map_pixel == (255, 255, 255) and map_pixel2 == (255, 255, 255):
         return True
     return False
 
@@ -205,19 +214,22 @@ while running:
     current_time+=0.05
 
     collision_book = pygame.sprite.spritecollide(Kokomi, object_sprites, False)
+    collision_shadow = pygame.sprite.spritecollide(Kokomi, shadow_sprites, False)
     if collision_book:
         for book in collision_book:
             if len(book_in_hand) < 3:
-                text_pickup = text_small.render("Press [E] to pick up the book", True, ("white"))
+                text_pickup = text_small.render("Press [E] to pick up the book", True, ("black"))
                 screen.blit(text_pickup, (book.rect.x + 50 - text_pickup.get_width()/2, book.rect.y - 15 - text_pickup.get_height()))
                 if pygame.key.get_pressed()[pygame.K_e]:
                     object_sprites.remove(book)
+                    for shadoww in collision_shadow:
+                        shadow_sprites.remove(shadoww)
                     book_in_hand.add(book)
                     book.image = pygame.transform.scale(book.image,(30,30))
                     num_slot+= 1
                     book.slot = num_slot
                     book.held = True
-                    text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("white"))
+                    text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("black"))
             else:
                 text_pickup = text_small.render("Your inventory is full", True, ("white"))
                 screen.blit(text_pickup, (book.rect.x + 50 - text_pickup.get_width()/2, book.rect.y - 15 - text_pickup.get_height()))
@@ -235,7 +247,7 @@ while running:
                         num_slot=0
                         book_in_hand.remove(book)
                 text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
-                text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("white"))      
+                text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("black"))      
         else:
             if total_books_collected == tot_buku:
                 text_surface = text_font.render("Congratulations! You've placed all the books on the shelf!", True, (255, 255, 255))
