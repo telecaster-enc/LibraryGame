@@ -20,6 +20,7 @@ current_time = 0
 books_inhand = 0
 total_books_collected = 0 
 num_slot = 0
+speed = 5
 
 class rak_sprite(pygame.sprite.Sprite):
     def __init__(self):
@@ -39,7 +40,6 @@ class shadow(pygame.sprite.Sprite):
     def update(self):
         self.image = pygame.transform.scale(self.image, (80 - math.sin(current_time)*5, 30 - math.sin(current_time)*5))
     
-
 class buku_sprite_yellow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -116,30 +116,36 @@ class kokomi(pygame.sprite.Sprite):
         self.rect.x = 100
         self.rect.y = 300
         self.hitbox = pygame.draw.rect(screen, (0,0,0), (100,300, 100,100))
+        self.speedself = speed
 
 
     def update(self):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            if can_walk(self.rect.x, self.rect.y+10, "down"):
-                self.rect.y += 10
+            if can_walk(self.rect.x, self.rect.y+self.speedself, "down"):
+                self.rect.y += self.speedself
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            if can_walk(self.rect.x, self.rect.y-10, "up"):    
-                self.rect.y -= 10
+            if can_walk(self.rect.x, self.rect.y-self.speedself, "up"):
+                self.rect.y -= self.speedself
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            if can_walk(self.rect.x+10, self.rect.y, "right"):
-                self.rect.x += 10
+            if can_walk(self.rect.x+self.speedself, self.rect.y, "right"):
+                self.rect.x += self.speedself
             if self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
                 self.turn_left = False
             #self.rect = self.image.get_rect()
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            if can_walk(self.rect.x-10, self.rect.y, "left"):
-                self.rect.x -= 10
+            if can_walk(self.rect.x-self.speedself, self.rect.y, "left"):
+                self.rect.x -= self.speedself
             if not self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
                 self.turn_left = True
             #self.rect = self.image_flipped.get_rect()
+        if keys[pygame.K_LSHIFT]:
+            increase_speed()
+            self.speedself = speed
+        else:
+            self.speedself = 5
 
 Kokomi = kokomi()
 rak = rak_sprite()  
@@ -205,9 +211,15 @@ def can_walk(current_x, current_y, dir):
             map_pixel2 = floor_1_coll.get_at((current_x+100,current_y+100))
     except IndexError:
         return False
-    if map_pixel == (255, 255, 255) and map_pixel2 == (255, 255, 255):
+    if map_pixel == (255,255,255) and map_pixel2 == (255, 255, 255):
         return True
     return False
+
+def increase_speed():
+    global speed
+    speed += 1
+    if speed > 10:
+        speed = 10
 
 while running: 
     draw_everything()
