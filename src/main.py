@@ -243,13 +243,13 @@ while running:
                     book.held = True
                     text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("black"))
             else:
-                text_pickup = text_small.render("Your inventory is full", True, ("white"))
+                text_pickup = text_small.render("Your inventory is full", True, ("black"))
                 screen.blit(text_pickup, (book.rect.x + 50 - text_pickup.get_width()/2, book.rect.y - 15 - text_pickup.get_height()))
 
     collision_rak = pygame.sprite.spritecollide(Kokomi, rak_sprites, False)
     if collision_rak:
         if len(book_in_hand) > 0:
-            text_rak = text_font.render("Press [SPACE] to place the book on the shelf", True, (255, 255, 255))
+            text_rak = text_font.render("Press [SPACE] to place the book on the shelf", True, ("black"))
             for rak in collision_rak:    
                 screen.blit(text_rak, (1280-text_rak.get_width()-10, 720-400-text_rak.get_height()-10))
             if pygame.key.get_pressed()[pygame.K_SPACE]:
@@ -258,13 +258,13 @@ while running:
                         total_books_collected+=1
                         num_slot=0
                         book_in_hand.remove(book)
-                text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, (255, 255, 255))
+                text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, ("black"))
                 text_inventory = text_font.render(f"Inventory: {len(book_in_hand)}/3", True, ("black"))      
         else:
             if total_books_collected == tot_buku:
-                text_surface = text_font.render("Congratulations! You've placed all the books on the shelf!", True, (255, 255, 255))
+                text_surface = text_font.render("Congratulations! You've placed all the books on the shelf!", True, ("black"))
             else:
-                text_rak = text_font.render("There are no books to place on the shelf!", True, (255, 255, 255))
+                text_rak = text_font.render("There are no books to place on the shelf!", True, ("black"))
                 screen.blit(text_rak, (1280-text_rak.get_width() - 10, 720-400-text_rak.get_height()-10))
 
     for event in pygame.event.get():
