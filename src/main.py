@@ -1,4 +1,4 @@
-import random, pygame, time, schedule, sys, math
+import random, pygame, time, schedule, sys, math, numpy
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -35,11 +35,14 @@ class shadow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = pygame.image.load("assets/images/shadow.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (100, 30))
+        self.rect = self.image.get_rect()
         self.rect = (0,0)
 
     def update(self):
-        self.image = pygame.transform.scale(self.image, (80 - math.sin(current_time)*5, 30 - math.sin(current_time)*5))
-    
+        self.image = pygame.transform.scale(self.image, (100 - math.sin(current_time)*10, 30 - math.sin(current_time)*3))
+        self.rect = (self.base_x + math.sin(current_time)*5, self.base_y + math.sin(current_time)*0)
+
 class buku_sprite_yellow(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -48,14 +51,9 @@ class buku_sprite_yellow(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 1180)
         self.rect.y = random.randint(0, 620)
-
-        self.shadow = pygame.draw.ellipse(screen,(0, 0, 0, 255), (self.rect.x, self.rect.y-150, 100,30))
-
         self.base_y= self.rect.y        
         self.held=False 
-        self.slot = 0
-
-        
+        self.slot = 0        
 
     def update(self):
         if self.held:
@@ -115,37 +113,35 @@ class kokomi(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = 100
         self.rect.y = 300
-        self.hitbox = pygame.draw.rect(screen, (0,0,0), (100,300, 100,100))
         self.speedself = speed
 
-
     def update(self):
+        global speed
         keys = pygame.key.get_pressed()
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
             if can_walk(self.rect.x, self.rect.y+self.speedself, "down"):
-                self.rect.y += self.speedself
+                self.rect.y += can_walk(self.rect.x, self.rect.y, "down")
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             if can_walk(self.rect.x, self.rect.y-self.speedself, "up"):
-                self.rect.y -= self.speedself
+                self.rect.y -= can_walk(self.rect.x, self.rect.y, "up")
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            if can_walk(self.rect.x+self.speedself, self.rect.y, "right"):
-                self.rect.x += self.speedself
+            if can_walk(self.rect.x, self.rect.y, "right") != 0:
+                self.rect.x += can_walk(self.rect.x, self.rect.y, "right")
             if self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
                 self.turn_left = False
-            #self.rect = self.image.get_rect()
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            if can_walk(self.rect.x-self.speedself, self.rect.y, "left"):
-                self.rect.x -= self.speedself
+            if can_walk(self.rect.x, self.rect.y, "left"):
+                self.rect.x -= can_walk(self.rect.x, self.rect.y, "left")
             if not self.turn_left:
                 self.image = pygame.transform.flip(self.image, True, False)
                 self.turn_left = True
-            #self.rect = self.image_flipped.get_rect()
         if keys[pygame.K_LSHIFT]:
             increase_speed()
             self.speedself = speed
         else:
             self.speedself = 5
+            speed = 5
 
 Kokomi = kokomi()
 rak = rak_sprite()  
@@ -157,24 +153,31 @@ for i in range(tot_buku//3):
     buku_banyak = buku_sprite_yellow()
     object_sprites.add(buku_banyak)
     shade = shadow() 
-    #shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    #shadow_sprites.add(shade)
+    shadow_sprites.add(shade)
+    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    shade.base_x = buku_banyak.rect.x + 5
+    shade.base_y = buku_banyak.rect.y + 100
+
 for i in range(tot_buku//3):
     buku_banyak = buku_sprite_green()
     object_sprites.add(buku_banyak)
     shade = shadow() 
-    #shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    #shadow_sprites.add(shade)
+    shadow_sprites.add(shade)
+    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    shade.base_x = buku_banyak.rect.x + 5
+    shade.base_y = buku_banyak.rect.y + 100
+    
 for i in range(tot_buku//3):
     buku_banyak = buku_sprite_white()
     object_sprites.add(buku_banyak)
     shade = shadow() 
-    #shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    #shadow_sprites.add(shade)
+    shadow_sprites.add(shade)
+    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
+    shade.base_x = buku_banyak.rect.x + 5
+    shade.base_y = buku_banyak.rect.y + 100
 rak_sprites = pygame.sprite.GroupSingle(rak)
 
 text_surface = text_font.render("Collect the books!", True, ("black"))
-text_total = text_font.render(f"Total books collected: 0/{tot_buku}", True, ("black"))
 text_inventory = text_font.render(f"Inventory: {books_inhand}/3", True, ("black"))
 text_pickup = text_small.render("Press [E] to pick up the book", True, ("black"))
 text_total = text_font.render(f"Total books collected: {total_books_collected}/{tot_buku}", True, ("black"))
@@ -183,12 +186,12 @@ def draw_everything():
     screen.fill(warna)
     screen.blit(floor_1, (0,0)) 
     rak_sprites.draw(screen)
-    #shadow_sprites.draw(screen)
+    shadow_sprites.draw(screen)
     object_sprites.draw(screen)
     player_sprites.draw(screen)
     book_in_hand.draw(screen)
     player_sprites.update()
-    #shadow_sprites.update()
+    shadow_sprites.update()
     object_sprites.update()
     book_in_hand.update()
     screen.blit(text_surface, (10, 10))
@@ -196,24 +199,29 @@ def draw_everything():
     screen.blit(text_total, (10, 720 - text_total.get_height()-10))
 
 def can_walk(current_x, current_y, dir):
-    try:
-        if dir == "right":
-            map_pixel = floor_1_coll.get_at((current_x+100,current_y))
-            map_pixel2 = floor_1_coll.get_at((current_x+100,current_y+100))
-        elif dir == "left":
-            map_pixel = floor_1_coll.get_at((current_x,current_y))
-            map_pixel2 = floor_1_coll.get_at((current_x,current_y+100))
-        elif dir == "up":
-            map_pixel = floor_1_coll.get_at((current_x,current_y))
-            map_pixel2 = floor_1_coll.get_at((current_x+100,current_y))
-        elif dir == "down":
-            map_pixel = floor_1_coll.get_at((current_x,current_y+100))
-            map_pixel2 = floor_1_coll.get_at((current_x+100,current_y+100))
-    except IndexError:
-        return False
-    if map_pixel == (255,255,255) and map_pixel2 == (255, 255, 255):
-        return True
-    return False
+    pixel_steps = 0
+    for i in range(0, speed):
+        try:
+            if dir == "right":
+                map_pixel = floor_1_coll.get_at((current_x+100+i,current_y+85))
+                map_pixel2 = floor_1_coll.get_at((current_x+100+i,current_y+100))
+            elif dir == "left":
+                map_pixel = floor_1_coll.get_at((current_x-i,current_y+85))
+                map_pixel2 = floor_1_coll.get_at((current_x-i,current_y+100))
+            elif dir == "up":
+                map_pixel = floor_1_coll.get_at((current_x,current_y+85-i))
+                map_pixel2 = floor_1_coll.get_at((current_x+100,current_y+85-i))
+            elif dir == "down":
+                map_pixel = floor_1_coll.get_at((current_x,current_y+100+i))
+                map_pixel2 = floor_1_coll.get_at((current_x+100,current_y+100+i))
+        except IndexError:
+            return pixel_steps
+        if map_pixel == (255,255,255) and map_pixel2 == (255, 255, 255):
+            pixel_steps+=1
+            continue
+        else:
+            return pixel_steps
+    return pixel_steps
 
 def increase_speed():
     global speed
@@ -224,9 +232,8 @@ def increase_speed():
 while running: 
     draw_everything()
     current_time+=0.05
-
+    #collision_shadow = pygame.sprite.spritecollide(Kokomi, shadow_sprites, False)
     collision_book = pygame.sprite.spritecollide(Kokomi, object_sprites, False)
-    collision_shadow = pygame.sprite.spritecollide(Kokomi, shadow_sprites, False)
     if collision_book:
         for book in collision_book:
             if len(book_in_hand) < 3:
@@ -234,8 +241,6 @@ while running:
                 screen.blit(text_pickup, (book.rect.x + 50 - text_pickup.get_width()/2, book.rect.y - 15 - text_pickup.get_height()))
                 if pygame.key.get_pressed()[pygame.K_e]:
                     object_sprites.remove(book)
-                    for shadoww in collision_shadow:
-                        shadow_sprites.remove(shadoww)
                     book_in_hand.add(book)
                     book.image = pygame.transform.scale(book.image,(30,30))
                     num_slot+= 1
