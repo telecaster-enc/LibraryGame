@@ -1,4 +1,4 @@
-import random, pygame, time, schedule, sys, math, numpy
+import random, pygame, time, sys, math
 
 pygame.init()
 screen = pygame.display.set_mode((1280, 720))
@@ -18,7 +18,7 @@ text_small = pygame.font.SysFont(None, 24)
 tot_buku = 9
 current_time = 0
 books_inhand = 0
-total_books_collected = 0 
+total_books_collected = 0
 num_slot = 0
 speed = 5
 
@@ -43,10 +43,11 @@ class shadow(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (100 - math.sin(current_time)*10, 30 - math.sin(current_time)*3))
         self.rect = (self.base_x + math.sin(current_time)*5, self.base_y + math.sin(current_time)*0)
 
-class buku_sprite_yellow(pygame.sprite.Sprite):
+class buku_sprite(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.image.load("assets/images/buku_kuning.png").convert_alpha()
+        self.load = "assets/images/buku_putih.png"
+        self.image = pygame.image.load(self.load).convert_alpha()
         self.image = pygame.transform.scale(self.image, (100, 100))
         self.rect = self.image.get_rect()
         self.rect.x = random.randint(0, 1180)
@@ -149,32 +150,11 @@ player_sprites = pygame.sprite.GroupSingle(Kokomi)
 object_sprites = pygame.sprite.Group()
 shadow_sprites = pygame.sprite.Group()
 book_in_hand = pygame.sprite.Group()
-for i in range(tot_buku//3):
-    buku_banyak = buku_sprite_yellow()
-    object_sprites.add(buku_banyak)
-    shade = shadow() 
-    shadow_sprites.add(shade)
-    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    shade.base_x = buku_banyak.rect.x + 5
-    shade.base_y = buku_banyak.rect.y + 100
+for i in range(tot_buku):
+    buku_read = buku_sprite()
+    buku_read.load = "assets/images/buku_kuning.png"
+    object_sprites.add(buku_read)
 
-for i in range(tot_buku//3):
-    buku_banyak = buku_sprite_green()
-    object_sprites.add(buku_banyak)
-    shade = shadow() 
-    shadow_sprites.add(shade)
-    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    shade.base_x = buku_banyak.rect.x + 5
-    shade.base_y = buku_banyak.rect.y + 100
-    
-for i in range(tot_buku//3):
-    buku_banyak = buku_sprite_white()
-    object_sprites.add(buku_banyak)
-    shade = shadow() 
-    shadow_sprites.add(shade)
-    shade.rect = (buku_banyak.rect.x+5, buku_banyak.rect.y+100)
-    shade.base_x = buku_banyak.rect.x + 5
-    shade.base_y = buku_banyak.rect.y + 100
 rak_sprites = pygame.sprite.GroupSingle(rak)
 
 text_surface = text_font.render("Collect the books!", True, ("black"))
